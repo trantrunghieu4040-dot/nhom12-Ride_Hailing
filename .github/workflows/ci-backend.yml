@@ -1,0 +1,88 @@
+name: CI Backend — Ride-Hailing Connect
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test-backend:
+    name: Run Unit & Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: ride_hailing_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./backend
+
+      - name: Run database migrations
+        run: |
+          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < database/migrations/001_create_users.sql
+          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < database/migrations/002_create_bookings.sql
+          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < database/migrations/003_create_payments.sql
+          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < database/migrations/004_create_reviews.sql
+
+      - name: Run Unit Tests (JUnit/Jest)
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: secret
+          DB_NAME: ride_hailing_test
+          REDIS_HOST: 127.0.0.1
+          JWT_SECRET: test-jwt-secret-nhom12
+        run: npm run test:unit -- --coverage
+        working-directory: ./backend
+
+      - name: Run Integration Tests
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: secret
+          DB_NAME: ride_hailing_test
+          REDIS_HOST: 127.0.0.1
+          JWT_SECRET: test-jwt-secret-nhom12
+        run: npm run test:integration
+        working-directory: ./backend
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./backend/coverage
+          flags: backend
+          name: backend-coverage
+
+      - name: ESLint Code Check
+        run: npm run lint
+        working-directory: ./backend

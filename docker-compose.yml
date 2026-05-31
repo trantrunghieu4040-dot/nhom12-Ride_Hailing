@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: ride_hailing_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_NAME:-ride_hailing}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ride_hailing_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # User Service
+  user-service:
+    build: ./backend/src/services/user-service
+    container_name: user_service
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+
+  # Booking Service
+  booking-service:
+    build: ./backend/src/services/booking-service
+    container_name: booking_service
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+    depends_on:
+      - db
+      - redis
+
+  # Payment Service
+  payment-service:
+    build: ./backend/src/services/payment-service
+    container_name: payment_service
+    restart: always
+    ports:
+      - "3003:3003"
+    depends_on:
+      - db
+
+  # Location Service (WebSocket)
+  location-service:
+    build: ./backend/src/services/location-service
+    container_name: location_service
+    restart: always
+    ports:
+      - "3004:3004"
+    depends_on:
+      - redis
+
+  # Notification Service
+  notification-service:
+    build: ./backend/src/services/notification-service
+    container_name: notification_service
+    restart: always
+    ports:
+      - "3005:3005"
+
+  # Review Service
+  review-service:
+    build: ./backend/src/services/review-service
+    container_name: review_service
+    restart: always
+    ports:
+      - "3006:3006"
+    depends_on:
+      - db
+
+  # Chat (AI Chatbox) Service
+  chat-service:
+    build: ./backend/src/services/chat-service
+    container_name: chat_service
+    restart: always
+    ports:
+      - "3007:3007"
+
+volumes:
+  pgdata:
