@@ -20,30 +20,6 @@ jobs:
       run:
         working-directory: ./backend
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: secret
-          MYSQL_DATABASE: ride_hailing_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,51 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Wait for MySQL to be ready
-        run: |
-          for i in {1..30}; do
-            if mysqladmin ping -h 127.0.0.1 -u root -psecret --silent; then
-              echo "MySQL is ready!"
-              break
-            fi
-            echo "Waiting for MySQL... ($i/30)"
-            sleep 2
-          done
-
-      - name: Run database migrations
-        run: |
-          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < ../database/migrations/001_create_users.sql
-          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < ../database/migrations/002_create_bookings.sql
-          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < ../database/migrations/003_create_payments.sql
-          mysql -h 127.0.0.1 -u root -psecret ride_hailing_test < ../database/migrations/004_create_reviews.sql
-        env:
-          MYSQL_PWD: secret
-
       - name: Run Unit Tests
         env:
           NODE_ENV: test
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_USER: root
-          DB_PASSWORD: secret
-          DB_NAME: ride_hailing_test
-          REDIS_HOST: 127.0.0.1
-          REDIS_PORT: 6379
           JWT_SECRET: test-jwt-secret-nhom12
-        run: npm run test:unit -- --passWithNoTests --forceExit
+        run: npm run test:unit
 
       - name: Run Integration Tests
         env:
           NODE_ENV: test
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_USER: root
-          DB_PASSWORD: secret
-          DB_NAME: ride_hailing_test
-          REDIS_HOST: 127.0.0.1
-          REDIS_PORT: 6379
           JWT_SECRET: test-jwt-secret-nhom12
-        run: npm run test:integration -- --passWithNoTests --forceExit
+        run: npm run test:integration
 
       - name: Lint check (non-blocking)
         run: npm run lint
