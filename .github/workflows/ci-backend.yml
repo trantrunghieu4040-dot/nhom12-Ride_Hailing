@@ -23,8 +23,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install test dependencies only
-        run: npm install --no-save jest supertest --prefer-offline 2>/dev/null || npm install jest supertest
+      - name: Install Jest and Supertest
+        run: |
+          npm install jest supertest
 
       - name: Run Unit Tests
         env:

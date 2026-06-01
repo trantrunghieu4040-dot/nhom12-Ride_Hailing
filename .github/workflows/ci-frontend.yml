@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ─────────────────────────────────────────────────────────────
-  # Customer App (React Native) — Kiểm tra syntax & tests
+  # Customer App (React Native) — Jest tests
   # ─────────────────────────────────────────────────────────────
   test-customer-app:
     name: Customer App — Lint & Test
@@ -23,24 +23,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jest only (fast, no native deps)
-        run: npm install --no-save jest babel-jest @babel/core @babel/preset-env @babel/preset-react
+      - name: Install Jest and Babel
+        run: |
+          npm install jest babel-jest @babel/core @babel/preset-env @babel/preset-react
 
       - name: Run tests
         run: npx jest --passWithNoTests --forceExit --no-coverage
         env:
           NODE_ENV: test
 
-      - name: Check JS syntax
-        run: |
-          find src -name "*.jsx" -o -name "*.js" | head -20 | while read f; do
-            node --input-type=module < /dev/null 2>/dev/null || true
-            echo "Checked: $f"
-          done
-          echo "✅ Syntax check done"
-
   # ─────────────────────────────────────────────────────────────
-  # Driver App (React Native) — Kiểm tra syntax & tests
+  # Driver App (React Native) — Jest tests
   # ─────────────────────────────────────────────────────────────
   test-driver-app:
     name: Driver App — Lint & Test
@@ -55,23 +48,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jest only (fast, no native deps)
-        run: npm install --no-save jest babel-jest @babel/core @babel/preset-env @babel/preset-react
+      - name: Install Jest and Babel
+        run: |
+          npm install jest babel-jest @babel/core @babel/preset-env @babel/preset-react
 
       - name: Run tests
         run: npx jest --passWithNoTests --forceExit --no-coverage
         env:
           NODE_ENV: test
 
-      - name: Check JS syntax
-        run: |
-          find src -name "*.jsx" -o -name "*.js" | head -20 | while read f; do
-            echo "Checked: $f"
-          done
-          echo "✅ Syntax check done"
-
   # ─────────────────────────────────────────────────────────────
-  # Admin Web (Vite + React) — Build kiểm tra
+  # Admin Web (Vite + React) — Build
   # ─────────────────────────────────────────────────────────────
   test-admin-web:
     name: Admin Web — Lint & Build
