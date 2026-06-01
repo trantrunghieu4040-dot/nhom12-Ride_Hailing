@@ -35,14 +35,7 @@
     "supertest": "^6.3.3",
     "eslint": "^8.54.0"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.test.js",
-      "**/__tests__/**/*.js"
-    ],
-    "testTimeout": 10000
-  },
+
   "engines": {
     "node": ">=18.0.0"
   },

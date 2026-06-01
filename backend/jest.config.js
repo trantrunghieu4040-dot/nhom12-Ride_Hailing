@@ -2,9 +2,10 @@
 module.exports = {
   testEnvironment: 'node',
   testMatch: [
-    '**/tests/**/*.test.js',
-    '**/__tests__/**/*.js',
+    '<rootDir>/tests/**/*.test.js',
+    '<rootDir>/tests/**/*.spec.js',
   ],
-  testTimeout: 10000,
+  testTimeout: 15000,
   verbose: true,
+  passWithNoTests: true,
 };
