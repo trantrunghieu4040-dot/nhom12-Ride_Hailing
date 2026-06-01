@@ -26,18 +26,27 @@ jobs:
       - name: Install Jest
         run: npm install jest
 
-      - name: Verify test files exist
+      - name: Verify setup
         run: |
-          echo "=== Test files ==="
-          find tests -name "*.test.js" -type f
-          echo "=== Jest config ==="
-          cat jest.config.js
+          echo "Node: $(node --version)"
+          echo "NPM: $(npm --version)"
+          echo "Jest: $(./node_modules/.bin/jest --version)"
+          echo "Test files:"
+          find tests -name "*.test.js" 2>/dev/null || echo "No test files found"
 
       - name: Run all tests
         env:
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret-nhom12
-        run: npx jest --config jest.config.js --passWithNoTests --forceExit --no-coverage
+        run: |
+          ./node_modules/.bin/jest \
+            --testEnvironment node \
+            --testMatch "**/*.test.js" \
+            --passWithNoTests \
+            --forceExit \
+            --no-coverage \
+            --rootDir . \
+            tests/
 
       - name: Summary
         run: echo "✅ Backend tests passed!"
