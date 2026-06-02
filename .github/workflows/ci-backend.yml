@@ -23,21 +23,27 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dev dependencies only
-        run: npm install --ignore-scripts --no-audit --no-fund jest
+      - name: Install Jest
+        run: npm install --ignore-scripts jest
 
-      - name: Show environment
+      - name: Debug environment
         run: |
           node --version
           npx jest --version
-          echo "Test files:"
-          find . -name "*.test.js" -not -path "*/node_modules/*"
+          echo "=== Files in backend/ ==="
+          ls -la
+          echo "=== Test files ==="
+          find tests/ -name "*.js" 2>/dev/null || echo "No tests dir"
 
       - name: Run tests
         env:
           NODE_ENV: test
-          JWT_SECRET: test-jwt-secret-nhom12
-        run: npx jest --passWithNoTests --forceExit --no-coverage
-
-      - name: All tests passed!
-        run: echo "✅ Backend CI passed!"
+        run: |
+          npx jest \
+            --testEnvironment=node \
+            --roots=./tests \
+            --passWithNoTests \
+            --forceExit \
+            --no-coverage \
+            --no-cache \
+            2>&1
