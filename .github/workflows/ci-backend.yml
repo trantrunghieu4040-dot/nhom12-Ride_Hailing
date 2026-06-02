@@ -10,9 +10,6 @@ jobs:
   test-backend:
     name: Run Unit & Integration Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -23,27 +20,40 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jest
-        run: npm install --ignore-scripts jest
-
-      - name: Debug environment
+      - name: Create minimal package.json for testing
+        working-directory: ./backend
         run: |
-          node --version
-          npx jest --version
-          echo "=== Files in backend/ ==="
-          ls -la
-          echo "=== Test files ==="
-          find tests/ -name "*.js" 2>/dev/null || echo "No tests dir"
+          # Tạo package.json tối giản chỉ có jest
+          cat > /tmp/test-package.json << 'EOF'
+          {
+            "name": "backend-test-runner",
+            "version": "1.0.0",
+            "description": "CI test runner"
+          }
+          EOF
+          mkdir -p /tmp/ci-runner
+          cp /tmp/test-package.json /tmp/ci-runner/package.json
 
-      - name: Run tests
+      - name: Install Jest in isolated dir
+        run: |
+          cd /tmp/ci-runner
+          npm install jest --save-dev 2>&1
+          echo "Jest version: $(./node_modules/.bin/jest --version)"
+
+      - name: Run backend tests
+        working-directory: ./backend
         env:
           NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-nhom12
         run: |
-          npx jest \
+          /tmp/ci-runner/node_modules/.bin/jest \
             --testEnvironment=node \
             --roots=./tests \
             --passWithNoTests \
             --forceExit \
             --no-coverage \
             --no-cache \
-            2>&1
+            2>&1 || (echo "=== JEST FAILED with exit code $? ===" && exit 1)
+
+      - name: All tests passed!
+        run: echo "✅ Backend CI passed!"
