@@ -23,30 +23,21 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jest
-        run: npm install jest
+      - name: Install dev dependencies only
+        run: npm install --ignore-scripts --no-audit --no-fund jest
 
-      - name: Verify setup
+      - name: Show environment
         run: |
-          echo "Node: $(node --version)"
-          echo "NPM: $(npm --version)"
-          echo "Jest: $(./node_modules/.bin/jest --version)"
+          node --version
+          npx jest --version
           echo "Test files:"
-          find tests -name "*.test.js" 2>/dev/null || echo "No test files found"
+          find . -name "*.test.js" -not -path "*/node_modules/*"
 
-      - name: Run all tests
+      - name: Run tests
         env:
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret-nhom12
-        run: |
-          ./node_modules/.bin/jest \
-            --testEnvironment node \
-            --testMatch "**/*.test.js" \
-            --passWithNoTests \
-            --forceExit \
-            --no-coverage \
-            --rootDir . \
-            tests/
+        run: npx jest --passWithNoTests --forceExit --no-coverage
 
-      - name: Summary
-        run: echo "✅ Backend tests passed!"
+      - name: All tests passed!
+        run: echo "✅ Backend CI passed!"

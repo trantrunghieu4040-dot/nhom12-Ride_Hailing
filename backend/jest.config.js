@@ -1,11 +1,9 @@
 /** @type {import('jest').Config} */
 module.exports = {
   testEnvironment: 'node',
-  testMatch: [
-    '<rootDir>/tests/**/*.test.js',
-    '<rootDir>/tests/**/*.spec.js',
-  ],
+  roots: ['<rootDir>/tests'],
   testTimeout: 15000,
   verbose: true,
   passWithNoTests: true,
+  forceExit: true,
 };
