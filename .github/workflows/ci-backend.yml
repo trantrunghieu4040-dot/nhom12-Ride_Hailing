@@ -20,18 +20,37 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jest
+      - name: Install Jest globally
         run: npm install -g jest@29
 
-      - name: Verify Jest
-        run: jest --version
+      - name: Verify Jest installation
+        run: |
+          which jest || echo "jest not in PATH"
+          jest --version || echo "jest --version failed"
+          node -e "console.log('Node works')"
 
-      - name: Run tests
+      - name: List backend test files
+        working-directory: ./backend
+        run: |
+          echo "=== CWD ==="
+          pwd
+          echo "=== Contents ==="
+          ls -la
+          echo "=== Tests dir ==="
+          ls -la tests/ || echo "no tests dir"
+          ls -la tests/unit/ || echo "no unit dir"
+
+      - name: Run tests (with error output)
         working-directory: ./backend
         env:
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret-nhom12
-        run: jest tests/ --testEnvironment=node --passWithNoTests --forceExit --no-coverage --no-cache
+        run: |
+          set +e
+          jest tests/ --testEnvironment=node --passWithNoTests --forceExit --no-coverage --no-cache
+          EXIT_CODE=$?
+          echo "=== Jest exit code: $EXIT_CODE ==="
+          exit $EXIT_CODE
 
       - name: All tests passed!
-        run: echo "✅ Backend CI passed!"
+        run: echo "Backend CI passed!"
