@@ -10,6 +10,9 @@ jobs:
   test-backend:
     name: Run Unit & Integration Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -20,37 +23,23 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jest globally
-        run: npm install -g jest@29
-
-      - name: Verify Jest installation
+      - name: List test files
         run: |
-          which jest || echo "jest not in PATH"
-          jest --version || echo "jest --version failed"
-          node -e "console.log('Node works')"
+          echo "=== Working dir: $(pwd) ==="
+          echo "=== Test files ==="
+          find tests -name "*.test.js" 2>/dev/null && echo "Tests found" || echo "No tests dir"
 
-      - name: List backend test files
-        working-directory: ./backend
-        run: |
-          echo "=== CWD ==="
-          pwd
-          echo "=== Contents ==="
-          ls -la
-          echo "=== Tests dir ==="
-          ls -la tests/ || echo "no tests dir"
-          ls -la tests/unit/ || echo "no unit dir"
-
-      - name: Run tests (with error output)
-        working-directory: ./backend
+      - name: Run tests with npx
         env:
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret-nhom12
         run: |
-          set +e
-          jest tests/ --testEnvironment=node --passWithNoTests --forceExit --no-coverage --no-cache
-          EXIT_CODE=$?
-          echo "=== Jest exit code: $EXIT_CODE ==="
-          exit $EXIT_CODE
+          npx --yes jest@29 tests/ \
+            --testEnvironment=node \
+            --passWithNoTests \
+            --forceExit \
+            --no-coverage \
+            --no-cache
 
       - name: All tests passed!
         run: echo "Backend CI passed!"

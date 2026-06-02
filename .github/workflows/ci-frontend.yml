@@ -18,17 +18,12 @@ jobs:
         working-directory: ./frontend/customer-app
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Jest and Babel
-        run: |
-          npm install jest babel-jest @babel/core @babel/preset-env @babel/preset-react
-
       - name: Run tests
-        run: npx jest --passWithNoTests --forceExit --no-coverage
+        run: npx --yes jest@29 --passWithNoTests --forceExit --no-coverage --testEnvironment=node
         env:
           NODE_ENV: test
 
@@ -43,17 +38,12 @@ jobs:
         working-directory: ./frontend/driver-app
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Jest and Babel
-        run: |
-          npm install jest babel-jest @babel/core @babel/preset-env @babel/preset-react
-
       - name: Run tests
-        run: npx jest --passWithNoTests --forceExit --no-coverage
+        run: npx --yes jest@29 --passWithNoTests --forceExit --no-coverage --testEnvironment=node
         env:
           NODE_ENV: test
 
@@ -68,7 +58,6 @@ jobs:
         working-directory: ./frontend/admin-web
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
