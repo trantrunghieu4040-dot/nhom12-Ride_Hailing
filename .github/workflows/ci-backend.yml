@@ -20,40 +20,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Create minimal package.json for testing
-        working-directory: ./backend
-        run: |
-          # Tạo package.json tối giản chỉ có jest
-          cat > /tmp/test-package.json << 'EOF'
-          {
-            "name": "backend-test-runner",
-            "version": "1.0.0",
-            "description": "CI test runner"
-          }
-          EOF
-          mkdir -p /tmp/ci-runner
-          cp /tmp/test-package.json /tmp/ci-runner/package.json
+      - name: Install Jest
+        run: npm install -g jest@29
 
-      - name: Install Jest in isolated dir
-        run: |
-          cd /tmp/ci-runner
-          npm install jest --save-dev 2>&1
-          echo "Jest version: $(./node_modules/.bin/jest --version)"
+      - name: Verify Jest
+        run: jest --version
 
-      - name: Run backend tests
+      - name: Run tests
         working-directory: ./backend
         env:
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret-nhom12
-        run: |
-          /tmp/ci-runner/node_modules/.bin/jest \
-            --testEnvironment=node \
-            --roots=./tests \
-            --passWithNoTests \
-            --forceExit \
-            --no-coverage \
-            --no-cache \
-            2>&1 || (echo "=== JEST FAILED with exit code $? ===" && exit 1)
+        run: jest tests/ --testEnvironment=node --passWithNoTests --forceExit --no-coverage --no-cache
 
       - name: All tests passed!
         run: echo "✅ Backend CI passed!"
